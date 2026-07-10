@@ -3,6 +3,7 @@ package com.rubelsordar.bookpdfapp
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -21,6 +22,11 @@ class MainActivity : AppCompatActivity(), OnPageChangeListener {
     private var totalPages = 0
     private var lastSearchQuery = ""
 
+    companion object {
+        private const val TAG = "MainActivity"
+        private const val PDF_FILE_NAME = "document.pdf"
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
@@ -33,21 +39,56 @@ class MainActivity : AppCompatActivity(), OnPageChangeListener {
     }
 
     private fun setupPDFView() {
-        val pdfFile = File(filesDir, "document.pdf")
-        
-        if (!pdfFile.exists()) {
-            binding.tvResultCount.text = "PDF ফাইল পাওয়া যাচ্ছে না"
+        try {
+            val pdfFile = getPDFFile()
+            
+            if (!pdfFile.exists()) {
+                Log.e(TAG, "PDF file not found at: ${pdfFile.absolutePath}")
+                binding.tvResultCount.text = "PDF ফাইল পাওয়া যাচ্ছে না"
+                binding.tvResultCount.visibility = View.VISIBLE
+                return
+            }
+
+            Log.d(TAG, "Loading PDF from: ${pdfFile.absolutePath}")
+            binding.pdfView.fromFile(pdfFile)
+                .defaultPage(0)
+                .onPageChange(this)
+                .spacing(10)
+                .load()
+
+            pdfSearcher = PDFSearcher(pdfFile)
+            Log.d(TAG, "PDF loaded successfully")
+        } catch (e: Exception) {
+            Log.e(TAG, "Error loading PDF: ${e.message}", e)
+            binding.tvResultCount.text = "PDF লোড করতে সমস্যা হয়েছে"
             binding.tvResultCount.visibility = View.VISIBLE
-            return
+            Toast.makeText(this, "Error: ${e.localizedMessage}", Toast.LENGTH_LONG).show()
+        }
+    }
+
+    private fun getPDFFile(): File {
+        // প্রথমে assets থেকে কপি করার চেষ্টা করো
+        val assetsDir = File(filesDir, "assets")
+        if (!assetsDir.exists()) {
+            assetsDir.mkdirs()
         }
 
-        binding.pdfView.fromFile(pdfFile)
-            .defaultPage(0)
-            .onPageChange(this)
-            .spacing(10)
-            .load()
-
-        pdfSearcher = PDFSearcher(pdfFile)
+        val pdfFile = File(assetsDir, PDF_FILE_NAME)
+        
+        // যদি ফাইল না থাকে তো assets থেকে কপি করো
+        if (!pdfFile.exists()) {
+            try {
+                val inputStream = assets.open(PDF_FILE_NAME)
+                pdfFile.outputStream().use { output ->
+                    inputStream.copyTo(output)
+                }
+                Log.d(TAG, "PDF copied from assets successfully")
+            } catch (e: Exception) {
+                Log.w(TAG, "Could not copy PDF from assets: ${e.message}")
+            }
+        }
+        
+        return pdfFile
     }
 
     private fun setupToolbar() {
@@ -102,19 +143,26 @@ class MainActivity : AppCompatActivity(), OnPageChangeListener {
     }
 
     private fun performSearch(query: String) {
-        val results = pdfSearcher?.search(query) ?: emptyList()
-        
-        if (results.isEmpty()) {
-            binding.tvResultCount.text = "কোনো ফলাফল পাওয়া যাচ্ছে না"
-            binding.tvResultCount.visibility = View.VISIBLE
-            highlightPositions = emptyList()
-            currentHighlightIndex = -1
-            return
+        try {
+            val results = pdfSearcher?.search(query) ?: emptyList()
+            
+            if (results.isEmpty()) {
+                Log.d(TAG, "No search results found for: $query")
+                binding.tvResultCount.text = "কোনো ফলাফল পাওয়া যাচ্ছে না"
+                binding.tvResultCount.visibility = View.VISIBLE
+                highlightPositions = emptyList()
+                currentHighlightIndex = -1
+                return
+            }
+            
+            Log.d(TAG, "Found ${results.size} results for: $query")
+            highlightPositions = results
+            currentHighlightIndex = 0
+            navigateToHighlight()
+        } catch (e: Exception) {
+            Log.e(TAG, "Error performing search: ${e.message}", e)
+            Toast.makeText(this, "সার্চে সমস্যা হয়েছে", Toast.LENGTH_SHORT).show()
         }
-        
-        highlightPositions = results
-        currentHighlightIndex = 0
-        navigateToHighlight()
     }
 
     private fun navigateToHighlight() {
@@ -122,7 +170,6 @@ class MainActivity : AppCompatActivity(), OnPageChangeListener {
         
         val position = highlightPositions[currentHighlightIndex]
         
-        // Jump to the page if different
         if (currentPage != position.pageNumber) {
             currentPage = position.pageNumber
             binding.pdfView.jumpTo(position.pageNumber)
