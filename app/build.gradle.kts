@@ -43,8 +43,8 @@ dependencies {
     implementation("com.google.android.material:material:1.11.0")
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
     
-    // PDF Viewer Library
-    implementation("com.github.barteksc:android-pdf-viewer:3.2.0-beta.1")
+    // PDF Viewer Library - Using stable version instead of beta
+    implementation("com.github.barteksc:android-pdf-viewer:3.2.0")
     
     // PDFBox for text extraction
     implementation("com.tom_roush:pdfbox-android:2.0.27.0")
