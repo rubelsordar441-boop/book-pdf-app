@@ -1,8 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">PDF Viewer</string>
-    <string name="search_hint">PDF এ খুঁজুন...</string>
-    <string name="btn_previous">▲</string>
-    <string name="btn_next">▼</string>
-    <string name="page_indicator">পৃষ্ঠা</string>
+    <string name="app_name">Book PDF App</string>
 </resources>
