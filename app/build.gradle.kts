@@ -43,11 +43,11 @@ dependencies {
     implementation("com.google.android.material:material:1.11.0")
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
     
-    // PDF Viewer Library - Using stable version from JitPack
+    // PDF Viewer Library - Stable
     implementation("com.github.barteksc:android-pdf-viewer:3.2.0-beta.1")
     
-    // PDFBox for text extraction
-    implementation("com.tom_roush:pdfbox-android:2.0.27.0")
+    // PDFBox for text extraction - Must be 1.8.10.0 for barteksc
+    implementation("com.tom_roush:pdfbox-android:1.8.10.0")
     
     // Lifecycle
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
