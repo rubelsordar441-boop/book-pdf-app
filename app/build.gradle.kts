@@ -43,16 +43,14 @@ dependencies {
     implementation("com.google.android.material:material:1.11.0")
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
     
-    // PDF Viewer Library - Stable
-    implementation("com.github.barteksc:android-pdf-viewer:3.2.0-beta.1")
+    // PDF Viewer - Google এর Official, Jitpack লাগবে না
+    implementation("com.google.android:pdf-viewer:1.0.0")
     
-    // PDFBox for text extraction - Must be 1.8.10.0 for barteksc
-    implementation("com.tom_roush:pdfbox-android:1.8.10.0")
+    // PDFBox বাদ - Text লাগলে পরে Add করবো
+    // implementation("com.tom_roush:pdfbox-android:1.8.10.0")
     
-    // Lifecycle
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
     
-    // Testing
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
